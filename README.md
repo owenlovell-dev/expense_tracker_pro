@@ -8,6 +8,7 @@ The app helps users record expenses, record income, view summaries, set monthly 
 
 - Add expenses with amount, category, description, and timestamp
 - View all expenses
+- Edit expenses by ID
 - Delete expenses by ID
 - Add income with amount, source, description, and timestamp
 - View all income entries
@@ -100,12 +101,13 @@ Expense Tracker Pro
 5. View all income
 6. Delete expense
 7. Delete income
-8. Set monthly budget
-9. View budgets
-10. Delete budget
-11. Monthly summary
-12. Export data to CSV
-13. Exit
+8. Edit expense
+9. Set monthly budget
+10. View budgets
+11. Delete budget
+12. Monthly summary
+13. Export data to CSV
+14. Exit
 ```
 
 ## Example Monthly Budget Output

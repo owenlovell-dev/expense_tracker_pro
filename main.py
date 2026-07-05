@@ -3,6 +3,8 @@
     add_expense,
     add_income,
     set_budget,
+    get_expense_by_id,
+    update_expense,
     delete_expense,
     delete_income,
     delete_budget,
@@ -32,12 +34,13 @@ def show_menu():
     print("5. View all income")
     print("6. Delete expense")
     print("7. Delete income")
-    print("8. Set monthly budget")
-    print("9. View budgets")
-    print("10. Delete budget")
-    print("11. Monthly summary")
-    print("12. Export data to CSV")
-    print("13. Exit")
+    print("8. Edit expense")
+    print("9. Set monthly budget")
+    print("10. View budgets")
+    print("11. Delete budget")
+    print("12. Monthly summary")
+    print("13. Export data to CSV")
+    print("14. Exit")
 
 
 def add_expense_flow():
@@ -195,6 +198,72 @@ def view_budgets():
         )
 
 
+def edit_expense_flow():
+    view_all_expenses()
+
+    expense_id_input = input("Enter the ID of the expense to edit: ").strip()
+
+    try:
+        expense_id = int(expense_id_input)
+    except ValueError:
+        print("Invalid ID. Please enter a number.")
+        return
+
+    expense = get_expense_by_id(expense_id)
+
+    if expense is None:
+        print("No expense found with that ID.")
+        return
+
+    _, current_amount, current_category, current_description, current_created_at = expense
+
+    print()
+    print("Selected Expense")
+    print("----------------")
+    print(f"Amount: €{current_amount:.2f}")
+    print(f"Category: {current_category}")
+    print(f"Description: {current_description}")
+    print(f"Created at: {current_created_at}")
+
+    print()
+    print("Press Enter to keep the current value.")
+
+    new_amount_input = input(f"New amount [{current_amount:.2f}]: ").replace(",", ".").strip()
+
+    if new_amount_input:
+        try:
+            new_amount = float(new_amount_input)
+        except ValueError:
+            print("Invalid amount. Please enter a number.")
+            return
+
+        if new_amount <= 0:
+            print("Amount must be greater than 0.")
+            return
+    else:
+        new_amount = current_amount
+
+    new_category = input(f"New category [{current_category}]: ").strip()
+    if not new_category:
+        new_category = current_category
+
+    new_description = input(f"New description [{current_description}]: ").strip()
+    if not new_description:
+        new_description = current_description
+
+    updated = update_expense(
+        expense_id=expense_id,
+        amount=new_amount,
+        category=new_category,
+        description=new_description,
+    )
+
+    if updated:
+        print("Expense updated successfully.")
+    else:
+        print("Could not update expense.")
+
+
 def delete_expense_flow():
     view_all_expenses()
 
@@ -329,20 +398,22 @@ def main():
         elif choice == "7":
             delete_income_flow()
         elif choice == "8":
-            set_budget_flow()
+            edit_expense_flow()
         elif choice == "9":
-            view_budgets()
+            set_budget_flow()
         elif choice == "10":
-            delete_budget_flow()
+            view_budgets()
         elif choice == "11":
-            view_monthly_summary()
+            delete_budget_flow()
         elif choice == "12":
-            export_data_flow()
+            view_monthly_summary()
         elif choice == "13":
+            export_data_flow()
+        elif choice == "14":
             print("Goodbye.")
             break
         else:
-            print("Invalid choice. Please choose 1-13.")
+            print("Invalid choice. Please choose 1-14.")
 
 
 if __name__ == "__main__":

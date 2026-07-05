@@ -97,6 +97,34 @@ def set_budget(category, monthly_limit):
         conn.commit()
 
 
+def get_expense_by_id(expense_id):
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            SELECT id, amount, category, description, created_at
+            FROM expenses
+            WHERE id = ?
+            """,
+            (expense_id,),
+        )
+        return cursor.fetchone()
+
+
+def update_expense(expense_id, amount, category, description):
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            UPDATE expenses
+            SET amount = ?, category = ?, description = ?
+            WHERE id = ?
+            """,
+            (amount, category, description, expense_id),
+        )
+        conn.commit()
+
+        return cursor.rowcount > 0
+
+
 def delete_expense(expense_id):
     with get_connection() as conn:
         cursor = conn.execute(
