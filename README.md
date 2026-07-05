@@ -17,6 +17,7 @@ The app helps users record expenses, record income, view summaries, set monthly 
 - See spending totals by category
 - Set monthly budget limits per category
 - View monthly budget status
+- Delete monthly budgets by category
 - Get warnings when a category is over budget
 - Export expenses, income, and budgets to CSV files
 
@@ -101,9 +102,10 @@ Expense Tracker Pro
 7. Delete income
 8. Set monthly budget
 9. View budgets
-10. Monthly summary
-11. Export data to CSV
-12. Exit
+10. Delete budget
+11. Monthly summary
+12. Export data to CSV
+13. Exit
 ```
 
 ## Example Monthly Budget Output

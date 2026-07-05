@@ -5,6 +5,7 @@
     set_budget,
     delete_expense,
     delete_income,
+    delete_budget,
     get_expenses,
     get_income_entries,
     get_budgets,
@@ -33,9 +34,10 @@ def show_menu():
     print("7. Delete income")
     print("8. Set monthly budget")
     print("9. View budgets")
-    print("10. Monthly summary")
-    print("11. Export data to CSV")
-    print("12. Exit")
+    print("10. Delete budget")
+    print("11. Monthly summary")
+    print("12. Export data to CSV")
+    print("13. Exit")
 
 
 def add_expense_flow():
@@ -231,6 +233,23 @@ def delete_income_flow():
         print("No income entry found with that ID.")
 
 
+def delete_budget_flow():
+    view_budgets()
+
+    category = input("Enter the category of the budget to delete: ").strip()
+
+    if not category:
+        print("Category cannot be empty.")
+        return
+
+    deleted = delete_budget(category)
+
+    if deleted:
+        print("Budget deleted successfully.")
+    else:
+        print("No budget found for that category.")
+
+
 def view_monthly_summary():
     monthly_income = get_current_month_income()
     monthly_spent = get_current_month_total()
@@ -314,14 +333,16 @@ def main():
         elif choice == "9":
             view_budgets()
         elif choice == "10":
-            view_monthly_summary()
+            delete_budget_flow()
         elif choice == "11":
-            export_data_flow()
+            view_monthly_summary()
         elif choice == "12":
+            export_data_flow()
+        elif choice == "13":
             print("Goodbye.")
             break
         else:
-            print("Invalid choice. Please choose 1-12.")
+            print("Invalid choice. Please choose 1-13.")
 
 
 if __name__ == "__main__":
