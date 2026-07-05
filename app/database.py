@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 import sqlite3
 from datetime import datetime
 
@@ -15,7 +15,8 @@ def get_connection():
 
 def init_db():
     with get_connection() as conn:
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS expenses (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 amount REAL NOT NULL,
@@ -23,7 +24,8 @@ def init_db():
                 description TEXT,
                 created_at TEXT NOT NULL
             )
-        """)
+            """
+        )
         conn.commit()
 
 
@@ -31,53 +33,90 @@ def add_expense(amount, category, description):
     created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     with get_connection() as conn:
-        conn.execute("""
+        conn.execute(
+            """
             INSERT INTO expenses (amount, category, description, created_at)
             VALUES (?, ?, ?, ?)
-        """, (amount, category, description, created_at))
+            """,
+            (amount, category, description, created_at),
+        )
         conn.commit()
 
 
 def delete_expense(expense_id):
     with get_connection() as conn:
-        cursor = conn.execute("""
-            DELETE FROM expenses
-            WHERE id = ?
-        """, (expense_id,))
+        cursor = conn.execute(
+            "DELETE FROM expenses WHERE id = ?",
+            (expense_id,),
+        )
         conn.commit()
 
-        return cursor.rowcount
+        return cursor.rowcount > 0
 
 
 def get_expenses():
     with get_connection() as conn:
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT * FROM expenses
+        cursor = conn.execute(
+            """
+            SELECT id, amount, category, description, created_at
+            FROM expenses
             ORDER BY created_at DESC
-        """).fetchall()
-
-        return [dict(row) for row in rows]
+            """
+        )
+        return cursor.fetchall()
 
 
 def get_total_spent():
     with get_connection() as conn:
-        total = conn.execute("""
+        cursor = conn.execute(
+            """
             SELECT COALESCE(SUM(amount), 0)
             FROM expenses
-        """).fetchone()[0]
-
-        return total
+            """
+        )
+        return cursor.fetchone()[0]
 
 
 def get_category_totals():
     with get_connection() as conn:
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT category, SUM(amount) as total
+        cursor = conn.execute(
+            """
+            SELECT category, SUM(amount) AS total
             FROM expenses
             GROUP BY category
             ORDER BY total DESC
-        """).fetchall()
+            """
+        )
+        return cursor.fetchall()
 
-        return [dict(row) for row in rows]
+
+def get_current_month_total():
+    current_month = datetime.now().strftime("%Y-%m")
+
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            SELECT COALESCE(SUM(amount), 0)
+            FROM expenses
+            WHERE created_at LIKE ?
+            """,
+            (f"{current_month}%",),
+        )
+        return cursor.fetchone()[0]
+
+
+def get_current_month_category_totals():
+    current_month = datetime.now().strftime("%Y-%m")
+
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            SELECT category, SUM(amount) AS total
+            FROM expenses
+            WHERE created_at LIKE ?
+            GROUP BY category
+            ORDER BY total DESC
+            """,
+            (f"{current_month}%",),
+        )
+        return cursor.fetchall()
