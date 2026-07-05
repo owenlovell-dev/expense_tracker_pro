@@ -39,6 +39,16 @@ def init_db():
             """
         )
 
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS budgets (
+                category TEXT PRIMARY KEY,
+                monthly_limit REAL NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+
         conn.commit()
 
 
@@ -66,6 +76,23 @@ def add_income(amount, source, description):
             VALUES (?, ?, ?, ?)
             """,
             (amount, source, description, created_at),
+        )
+        conn.commit()
+
+
+def set_budget(category, monthly_limit):
+    updated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO budgets (category, monthly_limit, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(category) DO UPDATE SET
+                monthly_limit = excluded.monthly_limit,
+                updated_at = excluded.updated_at
+            """,
+            (category, monthly_limit, updated_at),
         )
         conn.commit()
 
@@ -111,6 +138,18 @@ def get_income_entries():
             SELECT id, amount, source, description, created_at
             FROM income
             ORDER BY created_at DESC
+            """
+        )
+        return cursor.fetchall()
+
+
+def get_budgets():
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            SELECT category, monthly_limit, updated_at
+            FROM budgets
+            ORDER BY category
             """
         )
         return cursor.fetchall()
@@ -192,6 +231,28 @@ def get_current_month_category_totals():
             WHERE created_at LIKE ?
             GROUP BY category
             ORDER BY total DESC
+            """,
+            (f"{current_month}%",),
+        )
+        return cursor.fetchall()
+
+
+def get_budget_status_for_current_month():
+    current_month = datetime.now().strftime("%Y-%m")
+
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            SELECT
+                budgets.category,
+                budgets.monthly_limit,
+                COALESCE(SUM(expenses.amount), 0) AS spent
+            FROM budgets
+            LEFT JOIN expenses
+                ON expenses.category = budgets.category
+                AND expenses.created_at LIKE ?
+            GROUP BY budgets.category, budgets.monthly_limit
+            ORDER BY budgets.category
             """,
             (f"{current_month}%",),
         )

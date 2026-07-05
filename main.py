@@ -2,16 +2,19 @@
     init_db,
     add_expense,
     add_income,
+    set_budget,
     delete_expense,
     delete_income,
     get_expenses,
     get_income_entries,
+    get_budgets,
     get_total_spent,
     get_total_income,
     get_category_totals,
     get_current_month_total,
     get_current_month_income,
     get_current_month_category_totals,
+    get_budget_status_for_current_month,
 )
 
 
@@ -26,8 +29,10 @@ def show_menu():
     print("5. View all income")
     print("6. Delete expense")
     print("7. Delete income")
-    print("8. Monthly summary")
-    print("9. Exit")
+    print("8. Set monthly budget")
+    print("9. View budgets")
+    print("10. Monthly summary")
+    print("11. Exit")
 
 
 def add_expense_flow():
@@ -76,6 +81,29 @@ def add_income_flow():
 
     add_income(amount, source, description)
     print("Income added successfully.")
+
+
+def set_budget_flow():
+    category = input("Category to budget for: ").strip()
+
+    if not category:
+        print("Category cannot be empty.")
+        return
+
+    monthly_limit_input = input("Monthly budget limit: ").replace(",", ".")
+
+    try:
+        monthly_limit = float(monthly_limit_input)
+    except ValueError:
+        print("Invalid budget limit. Please enter a number.")
+        return
+
+    if monthly_limit <= 0:
+        print("Budget limit must be greater than 0.")
+        return
+
+    set_budget(category, monthly_limit)
+    print(f"Monthly budget for {category} set to €{monthly_limit:.2f}.")
 
 
 def view_summary():
@@ -144,6 +172,24 @@ def view_all_income():
         )
 
 
+def view_budgets():
+    budgets = get_budgets()
+
+    print()
+    print("Monthly Budgets")
+    print("---------------")
+
+    if not budgets:
+        print("No budgets set yet.")
+        return
+
+    for category, monthly_limit, updated_at in budgets:
+        print(
+            f"{category}: €{monthly_limit:.2f} "
+            f"| Updated: {updated_at}"
+        )
+
+
 def delete_expense_flow():
     view_all_expenses()
 
@@ -187,6 +233,7 @@ def view_monthly_summary():
     monthly_spent = get_current_month_total()
     monthly_remaining = monthly_income - monthly_spent
     monthly_category_totals = get_current_month_category_totals()
+    budget_status = get_budget_status_for_current_month()
 
     print()
     print("Current Month Summary")
@@ -195,15 +242,35 @@ def view_monthly_summary():
     print(f"Spent this month: €{monthly_spent:.2f}")
     print(f"Remaining this month: €{monthly_remaining:.2f}")
 
-    if not monthly_category_totals:
-        print()
-        print("No expenses for this month yet.")
-        return
-
     print()
     print("Expenses by category this month:")
-    for category, category_total in monthly_category_totals:
-        print(f"- {category}: €{category_total:.2f}")
+
+    if not monthly_category_totals:
+        print("No expenses for this month yet.")
+    else:
+        for category, category_total in monthly_category_totals:
+            print(f"- {category}: €{category_total:.2f}")
+
+    print()
+    print("Budget status this month:")
+
+    if not budget_status:
+        print("No budgets set yet.")
+        return
+
+    for category, monthly_limit, spent in budget_status:
+        difference = monthly_limit - spent
+
+        if difference >= 0:
+            print(
+                f"- {category}: €{spent:.2f} / €{monthly_limit:.2f} "
+                f"- €{difference:.2f} left"
+            )
+        else:
+            print(
+                f"- {category}: €{spent:.2f} / €{monthly_limit:.2f} "
+                f"- OVER by €{abs(difference):.2f}"
+            )
 
 
 def main():
@@ -228,12 +295,16 @@ def main():
         elif choice == "7":
             delete_income_flow()
         elif choice == "8":
-            view_monthly_summary()
+            set_budget_flow()
         elif choice == "9":
+            view_budgets()
+        elif choice == "10":
+            view_monthly_summary()
+        elif choice == "11":
             print("Goodbye.")
             break
         else:
-            print("Invalid choice. Please choose 1-9.")
+            print("Invalid choice. Please choose 1-11.")
 
 
 if __name__ == "__main__":
