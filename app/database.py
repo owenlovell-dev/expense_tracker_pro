@@ -38,6 +38,17 @@ def add_expense(amount, category, description):
         conn.commit()
 
 
+def delete_expense(expense_id):
+    with get_connection() as conn:
+        cursor = conn.execute("""
+            DELETE FROM expenses
+            WHERE id = ?
+        """, (expense_id,))
+        conn.commit()
+
+        return cursor.rowcount
+
+
 def get_expenses():
     with get_connection() as conn:
         conn.row_factory = sqlite3.Row

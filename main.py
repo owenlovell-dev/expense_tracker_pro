@@ -1,6 +1,7 @@
 from app.database import (
     init_db,
     add_expense,
+    delete_expense,
     get_expenses,
     get_total_spent,
     get_category_totals,
@@ -12,7 +13,8 @@ def show_menu():
     print("1. Add expense")
     print("2. View summary")
     print("3. View all expenses")
-    print("4. Exit")
+    print("4. Delete expense")
+    print("5. Exit")
 
 
 def add_expense_flow():
@@ -70,6 +72,25 @@ def view_all_expenses():
         )
 
 
+def delete_expense_flow():
+    view_all_expenses()
+
+    expense_id_input = input("\nEnter the ID of the expense to delete: ")
+
+    try:
+        expense_id = int(expense_id_input)
+    except ValueError:
+        print("Invalid ID. Please enter a whole number.")
+        return
+
+    deleted_count = delete_expense(expense_id)
+
+    if deleted_count == 0:
+        print("No expense found with that ID.")
+    else:
+        print(f"Deleted expense with ID {expense_id}.")
+
+
 def main():
     init_db()
 
@@ -84,6 +105,8 @@ def main():
         elif choice == "3":
             view_all_expenses()
         elif choice == "4":
+            delete_expense_flow()
+        elif choice == "5":
             print("Goodbye.")
             break
         else:
