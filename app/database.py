@@ -81,6 +81,17 @@ def delete_expense(expense_id):
         return cursor.rowcount > 0
 
 
+def delete_income(income_id):
+    with get_connection() as conn:
+        cursor = conn.execute(
+            "DELETE FROM income WHERE id = ?",
+            (income_id,),
+        )
+        conn.commit()
+
+        return cursor.rowcount > 0
+
+
 def get_expenses():
     with get_connection() as conn:
         cursor = conn.execute(
