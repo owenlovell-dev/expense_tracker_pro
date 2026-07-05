@@ -26,6 +26,19 @@ def init_db():
             )
             """
         )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS income (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                amount REAL NOT NULL,
+                source TEXT NOT NULL,
+                description TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+
         conn.commit()
 
 
@@ -39,6 +52,20 @@ def add_expense(amount, category, description):
             VALUES (?, ?, ?, ?)
             """,
             (amount, category, description, created_at),
+        )
+        conn.commit()
+
+
+def add_income(amount, source, description):
+    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO income (amount, source, description, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (amount, source, description, created_at),
         )
         conn.commit()
 
@@ -66,12 +93,35 @@ def get_expenses():
         return cursor.fetchall()
 
 
+def get_income_entries():
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            SELECT id, amount, source, description, created_at
+            FROM income
+            ORDER BY created_at DESC
+            """
+        )
+        return cursor.fetchall()
+
+
 def get_total_spent():
     with get_connection() as conn:
         cursor = conn.execute(
             """
             SELECT COALESCE(SUM(amount), 0)
             FROM expenses
+            """
+        )
+        return cursor.fetchone()[0]
+
+
+def get_total_income():
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            SELECT COALESCE(SUM(amount), 0)
+            FROM income
             """
         )
         return cursor.fetchone()[0]
@@ -98,6 +148,21 @@ def get_current_month_total():
             """
             SELECT COALESCE(SUM(amount), 0)
             FROM expenses
+            WHERE created_at LIKE ?
+            """,
+            (f"{current_month}%",),
+        )
+        return cursor.fetchone()[0]
+
+
+def get_current_month_income():
+    current_month = datetime.now().strftime("%Y-%m")
+
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            SELECT COALESCE(SUM(amount), 0)
+            FROM income
             WHERE created_at LIKE ?
             """,
             (f"{current_month}%",),

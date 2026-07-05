@@ -1,11 +1,15 @@
 ﻿from app.database import (
     init_db,
     add_expense,
+    add_income,
     delete_expense,
     get_expenses,
+    get_income_entries,
     get_total_spent,
+    get_total_income,
     get_category_totals,
     get_current_month_total,
+    get_current_month_income,
     get_current_month_category_totals,
 )
 
@@ -15,11 +19,13 @@ def show_menu():
     print("Expense Tracker Pro")
     print("-------------------")
     print("1. Add expense")
-    print("2. View summary")
-    print("3. View all expenses")
-    print("4. Delete expense")
-    print("5. Monthly summary")
-    print("6. Exit")
+    print("2. Add income")
+    print("3. View summary")
+    print("4. View all expenses")
+    print("5. View all income")
+    print("6. Delete expense")
+    print("7. Monthly summary")
+    print("8. Exit")
 
 
 def add_expense_flow():
@@ -46,21 +52,50 @@ def add_expense_flow():
     print("Expense added successfully.")
 
 
+def add_income_flow():
+    amount_input = input("Income amount: ").replace(",", ".")
+
+    try:
+        amount = float(amount_input)
+    except ValueError:
+        print("Invalid amount. Please enter a number.")
+        return
+
+    if amount <= 0:
+        print("Amount must be greater than 0.")
+        return
+
+    source = input("Source: ").strip()
+    description = input("Description: ").strip()
+
+    if not source:
+        print("Source cannot be empty.")
+        return
+
+    add_income(amount, source, description)
+    print("Income added successfully.")
+
+
 def view_summary():
-    total = get_total_spent()
+    total_income = get_total_income()
+    total_spent = get_total_spent()
+    remaining_balance = total_income - total_spent
     category_totals = get_category_totals()
 
     print()
     print("Overall Summary")
     print("---------------")
-    print(f"Total spent: €{total:.2f}")
+    print(f"Total income: €{total_income:.2f}")
+    print(f"Total spent: €{total_spent:.2f}")
+    print(f"Remaining balance: €{remaining_balance:.2f}")
 
     if not category_totals:
+        print()
         print("No expenses yet.")
         return
 
     print()
-    print("By category:")
+    print("Expenses by category:")
     for category, category_total in category_totals:
         print(f"- {category}: €{category_total:.2f}")
 
@@ -86,6 +121,27 @@ def view_all_expenses():
         )
 
 
+def view_all_income():
+    income_entries = get_income_entries()
+
+    print()
+    print("All Income")
+    print("----------")
+
+    if not income_entries:
+        print("No income yet.")
+        return
+
+    for income_id, amount, source, description, created_at in income_entries:
+        print(
+            f"ID: {income_id} | "
+            f"€{amount:.2f} | "
+            f"{source} | "
+            f"{description} | "
+            f"{created_at}"
+        )
+
+
 def delete_expense_flow():
     view_all_expenses()
 
@@ -106,20 +162,25 @@ def delete_expense_flow():
 
 
 def view_monthly_summary():
-    monthly_total = get_current_month_total()
+    monthly_income = get_current_month_income()
+    monthly_spent = get_current_month_total()
+    monthly_remaining = monthly_income - monthly_spent
     monthly_category_totals = get_current_month_category_totals()
 
     print()
     print("Current Month Summary")
     print("---------------------")
-    print(f"Total spent this month: €{monthly_total:.2f}")
+    print(f"Income this month: €{monthly_income:.2f}")
+    print(f"Spent this month: €{monthly_spent:.2f}")
+    print(f"Remaining this month: €{monthly_remaining:.2f}")
 
     if not monthly_category_totals:
+        print()
         print("No expenses for this month yet.")
         return
 
     print()
-    print("By category this month:")
+    print("Expenses by category this month:")
     for category, category_total in monthly_category_totals:
         print(f"- {category}: €{category_total:.2f}")
 
@@ -134,18 +195,22 @@ def main():
         if choice == "1":
             add_expense_flow()
         elif choice == "2":
-            view_summary()
+            add_income_flow()
         elif choice == "3":
-            view_all_expenses()
+            view_summary()
         elif choice == "4":
-            delete_expense_flow()
+            view_all_expenses()
         elif choice == "5":
-            view_monthly_summary()
+            view_all_income()
         elif choice == "6":
+            delete_expense_flow()
+        elif choice == "7":
+            view_monthly_summary()
+        elif choice == "8":
             print("Goodbye.")
             break
         else:
-            print("Invalid choice. Please choose 1-6.")
+            print("Invalid choice. Please choose 1-8.")
 
 
 if __name__ == "__main__":
