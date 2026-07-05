@@ -17,6 +17,8 @@
     get_budget_status_for_current_month,
 )
 
+from app.exporter import export_all_data_to_csv
+
 
 def show_menu():
     print()
@@ -32,7 +34,8 @@ def show_menu():
     print("8. Set monthly budget")
     print("9. View budgets")
     print("10. Monthly summary")
-    print("11. Exit")
+    print("11. Export data to CSV")
+    print("12. Exit")
 
 
 def add_expense_flow():
@@ -273,6 +276,18 @@ def view_monthly_summary():
             )
 
 
+def export_data_flow():
+    exported_files = export_all_data_to_csv()
+
+    print()
+    print("CSV Export")
+    print("----------")
+    print("Export completed successfully.")
+
+    for label, file_path in exported_files:
+        print(f"{label}: {file_path}")
+
+
 def main():
     init_db()
 
@@ -301,10 +316,12 @@ def main():
         elif choice == "10":
             view_monthly_summary()
         elif choice == "11":
+            export_data_flow()
+        elif choice == "12":
             print("Goodbye.")
             break
         else:
-            print("Invalid choice. Please choose 1-11.")
+            print("Invalid choice. Please choose 1-12.")
 
 
 if __name__ == "__main__":
